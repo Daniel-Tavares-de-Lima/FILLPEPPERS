@@ -1,0 +1,17 @@
+LARGURA = 800
+ALTURA = 600
+TITULO_JOGO = "TESTE"
+FPS = 60
+PRETO = (0,0,0)
+VERMELHO = (255,0,0)
+BRANCO = (255,255,255)
+LOGO = "logo.jpg"
+FONTE = "arial"
+AUDIO = "musicaDeFundo.mp3"
+PERSONAGEM = "Soldado.png"
+
+#####
+X_PERSONAGEM = 0
+Y_PERSONAGEM = 0
+X_SOLDADO = 200
+Y_SOLDADO = 20
