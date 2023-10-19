@@ -1,2 +1,2 @@
 # FILLPEPPERS
-Um jogo 2d feito em python
+Um jogo 2d feito em python... (EM DESENVOLVIMENTO)
