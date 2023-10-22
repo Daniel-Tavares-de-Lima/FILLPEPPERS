@@ -19,12 +19,6 @@ class Start:
         self.fonte = pygame.font.match_font(info.FONTE)
         self.carregarArquivos()
 
-        
-
-        
-
-        
-        
 
     def rodar(self):
         
