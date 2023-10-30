@@ -62,7 +62,6 @@ class Start:
     
         
     def telaStart(self):
-
         startBackground = self.background.get_rect()
         self.tela.blit(self.background, startBackground)
 

@@ -4,13 +4,15 @@ import info
 import os
 from sys import exit
 import time
+from personagens import Perso
 
 class Fases():
     def __init__(self, tela):
-        
+        ###INFORMAÇÕES DA TELA
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.intervalo = pygame.time.get_ticks()
+        
 
         #EFEITO PARALLAX CASO NECESSARIO
         self.scrol = 0
@@ -23,20 +25,31 @@ class Fases():
             self.bg_imagens.append(bg_imagem)
             
         self.bg_width = self.bg_imagens[0].get_width()
-        self.personagens = None
+
+        #######PERSONAGENS
+        self.personagem = Perso(self.tela)
+        self.persoInimigo = Perso(self.tela)
+        self.tiro = Perso(self.tela)
+        self.mascara_personagem = None
+        self.mascara_persoInimigo = None
+        ##TIRO
+        self.tiros = []
+        self.tecla_controle_disparo = 0
         
     
-    def moviPersonagem(self):
-        self.tela.blit(self.personagens, (info.X_PERSONAGEM,info.Y_PERSONAGEM))
+    
 
     def fase1(self):
         jogando = True
         colidiu = False
         pulando = False
+        tiro_visivel = False
+
         
-        direImagem = os.path.join(os.getcwd(), "imagens")
-        self.personagens = os.path.join(direImagem, "nave.png")
-        self.personagens = pygame.image.load(self.personagens).convert_alpha()
+        self.personagem.criarPersonagem("nave.png")
+        self.persoInimigo.criarPersonagem("naveInimigo.png")
+        self.tiro.criarPersonagem("shoot.png")
+        
 
         while jogando:
             self.relogio.tick(info.FPS) 
@@ -44,14 +57,18 @@ class Fases():
             
             #CENARIO 
             self.cenario()
-            personagem = pygame.draw.rect(self.tela,info.VERMELHO,(info.X_PERSONAGEM + 10, info.Y_PERSONAGEM + 3, 88,90))
-            self.moviPersonagem()
+            # personagem = pygame.draw.rect(self.tela,info.VERMELHO,(info.X_PERSONAGEM + 10, info.Y_PERSONAGEM + 3, 88,90))
+            self.personagem.mostrarPersonagem(info.X_PERSONAGEM, info.Y_PERSONAGEM)
+            self.persoInimigo.mostrarPersonagem(info.X_PERSOINIMIGO,info.Y_PERSOINIMIGO)
+            
 
-            perso = pygame.draw.rect(self.tela, (0,0,255), (200,200,90,90))
+            if self.mascara_personagem is None:
+                self.mascara_personagem = pygame.mask.from_surface(self.personagem.personagens)
+            if self.mascara_persoInimigo is None:
+                self.mascara_persoInimigo = pygame.mask.from_surface(self.persoInimigo.personagens)
 
-
-            if personagem.colliderect(perso):
-                print("colidiu")
+            if self.mascara_personagem.overlap(self.mascara_persoInimigo,(info.X_PERSOINIMIGO - info.X_PERSONAGEM, info.Y_PERSOINIMIGO - info.Y_PERSONAGEM)):
+                print("Colidiu")
 
 
             for evento in pygame.event.get():
@@ -60,9 +77,13 @@ class Fases():
                     pygame.quit()
                     exit()   
 
+                if evento.type == KEYUP:
+                    if tecla[pygame.K_SPACE]:
+                        self.dispararTiro() 
+            
+            
             tecla = pygame.key.get_pressed()
-            
-            
+            tempoAtual = pygame.time.get_ticks()
             ######################################
             #Atualiza a posição do objeto com base nas teclas pressionadas
             if tecla[pygame.K_d]:
@@ -81,13 +102,29 @@ class Fases():
                 info.Y += info.VELOCIDADE
                 info.Y_PERSONAGEM += info.VELOCIDADE
 
-            if tecla[pygame.K_SPACE] and not pulando:
-                info.VELOY = -info.PULO
-                pulando = True
+                    
+                      
+
+            if tecla[pygame.K_RIGHT]:
+                info.X += info.VELOCIDADE
+                info.X_PERSOINIMIGO += info.VELOCIDADE
+
+            if tecla[pygame.K_LEFT]:
+                info.X -= info.VELOCIDADE
+                info.X_PERSOINIMIGO -= info.VELOCIDADE
+
+            if tecla[pygame.K_UP]:
+                info.Y -= info.VELOCIDADE
+                info.Y_PERSOINIMIGO -= info.VELOCIDADE
+
+            if tecla[pygame.K_DOWN]:
+                info.Y += info.VELOCIDADE
+                info.Y_PERSOINIMIGO += info.VELOCIDADE        
                 
             #######################################     
             
             
+            self.atualizar()
 
             ###############################
             #SISTEMA DE COLISÃO
@@ -112,7 +149,7 @@ class Fases():
             #         print("colidu")
             colidiu = False
             ###################################
-
+            self.tecla_controle_disparo = False
             ########################################
             #PASSAGEM DAS IMAGENS
             self.scrol += 5
@@ -125,8 +162,30 @@ class Fases():
             ############################################
             
             pygame.display.update()
+    
+    ###CONFIGURAÇÕES DO TIRO
+    def dispararTiro(self):
+        xTiro = info.X_PERSOINIMIGO - 40
+        yTiro = info.Y_PERSOINIMIGO + 10
+        tiro_visivel = True
+        tiroX = xTiro
+        tiroY = yTiro
+        # info.VELOY = -info.PULO
+        # pulando = True
+        if tiro_visivel:
+            tiroX -= info.VELOTIRO
+            self.tiro.mostrarPersonagem(tiroX, yTiro)
+            print(tiroX)
+            if tiroX < -50:
+                print("OK")
+                tiro_visivel = False
+            self.tiros.append({"x": tiroX, "y": yTiro})
+                
 
-
+    def atualizar(self):
+        for tiro in self.tiros:
+            tiro["x"] -= info.VELOTIRO
+            self.tiro.mostrarPersonagem(tiro["x"], tiro["y"])
     #EFEITO PARALLAX CASO NECESSARIO
     def cenario(self):
         for x in range(self.num):
