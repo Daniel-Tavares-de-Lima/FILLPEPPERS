@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import info
 import os
+import random
 from sys import exit
 import time
 from personagens import Perso
@@ -28,13 +29,13 @@ class Fases():
 
         #######PERSONAGENS
         self.personagem = Perso(self.tela)
-        self.persoInimigo = Perso(self.tela)
         self.tiro = Perso(self.tela)
         self.mascara_personagem = None
         self.mascara_persoInimigo = None
-        ##TIRO
-        self.tiros = []
-        self.tecla_controle_disparo = 0
+        ##INIMIGO
+        self.direcao = "cima"
+        self.persoInimigo = Perso(self.tela)
+        self.tempoMudanca = pygame.time.get_ticks() + random.randint(1000,3000)
         
     
     
@@ -44,11 +45,13 @@ class Fases():
         colidiu = False
         pulando = False
         tiro_visivel = False
-
+        
         
         self.personagem.criarPersonagem("nave.png")
         self.persoInimigo.criarPersonagem("naveInimigo.png")
         self.tiro.criarPersonagem("shoot.png")
+
+        
         
 
         while jogando:
@@ -79,12 +82,17 @@ class Fases():
 
                 if evento.type == KEYUP:
                     if tecla[pygame.K_SPACE]:
-                        self.dispararTiro() 
+                        self.tiro.dispararTiro(info.X_PERSONAGEM, info.Y_PERSONAGEM, info.VELOTIRO,True)
+                        # self.dispararTiro() 
             
             
             tecla = pygame.key.get_pressed()
             tempoAtual = pygame.time.get_ticks()
             ######################################
+
+            if tempoAtual >= self.tempoMudanca:
+                self.direcao = random.choice(["cima", "baixo", "esquerda", "direita"])
+                self.tempoMudanca = tempoAtual + random.randint(1000,3000)
             #Atualiza a posição do objeto com base nas teclas pressionadas
             if tecla[pygame.K_d]:
                 info.X += info.VELOCIDADE
@@ -101,30 +109,46 @@ class Fases():
             if tecla[pygame.K_s]:
                 info.Y += info.VELOCIDADE
                 info.Y_PERSONAGEM += info.VELOCIDADE
-
-                    
-                      
-
-            if tecla[pygame.K_RIGHT]:
+                
+                 
+            if self.direcao == "direita":
                 info.X += info.VELOCIDADE
                 info.X_PERSOINIMIGO += info.VELOCIDADE
-
-            if tecla[pygame.K_LEFT]:
+            if self.direcao == "esquerda":
                 info.X -= info.VELOCIDADE
-                info.X_PERSOINIMIGO -= info.VELOCIDADE
-
-            if tecla[pygame.K_UP]:
+                info.X_PERSOINIMIGO -= info.VELOCIDADE  
+            if self.direcao == "cima":
                 info.Y -= info.VELOCIDADE
-                info.Y_PERSOINIMIGO -= info.VELOCIDADE
-
-            if tecla[pygame.K_DOWN]:
+                info.Y_PERSOINIMIGO -= info.VELOCIDADE 
+            if self.direcao == "baixo":
                 info.Y += info.VELOCIDADE
-                info.Y_PERSOINIMIGO += info.VELOCIDADE        
+                info.Y_PERSOINIMIGO += info.VELOCIDADE
+
+            info.X = max(0,min(info.X, info.LARGURA - self.persoInimigo.larguraInimigo))
+            info.Y = max(0,min(info.Y, info.ALTURA - self.persoInimigo.alturaInimigo))
+
+            
+            # if tecla[pygame.K_RIGHT]:
+            #     info.X += info.VELOCIDADE
+            #     info.X_PERSOINIMIGO += info.VELOCIDADE
+
+            # if tecla[pygame.K_LEFT]:
+            #     info.X -= info.VELOCIDADE
+            #     info.X_PERSOINIMIGO -= info.VELOCIDADE
+
+            # if tecla[pygame.K_UP]:
+            #     info.Y -= info.VELOCIDADE
+            #     info.Y_PERSOINIMIGO -= info.VELOCIDADE
+
+            # if tecla[pygame.K_DOWN]:
+            #     info.Y += info.VELOCIDADE
+            #     info.Y_PERSOINIMIGO += info.VELOCIDADE        
                 
             #######################################     
             
             
-            self.atualizar()
+            self.tiro.atualizar(info.VELOTIRO, True)
+            # self.persoInimigo.bot(info.X,info.Y,info.X_PERSOINIMIGO,info.Y_PERSOINIMIGO,info.VELOCIDADE)
 
             ###############################
             #SISTEMA DE COLISÃO
@@ -149,7 +173,7 @@ class Fases():
             #         print("colidu")
             colidiu = False
             ###################################
-            self.tecla_controle_disparo = False
+            
             ########################################
             #PASSAGEM DAS IMAGENS
             self.scrol += 5
@@ -162,30 +186,9 @@ class Fases():
             ############################################
             
             pygame.display.update()
-    
-    ###CONFIGURAÇÕES DO TIRO
-    def dispararTiro(self):
-        xTiro = info.X_PERSOINIMIGO - 40
-        yTiro = info.Y_PERSOINIMIGO + 10
-        tiro_visivel = True
-        tiroX = xTiro
-        tiroY = yTiro
-        # info.VELOY = -info.PULO
-        # pulando = True
-        if tiro_visivel:
-            tiroX -= info.VELOTIRO
-            self.tiro.mostrarPersonagem(tiroX, yTiro)
-            print(tiroX)
-            if tiroX < -50:
-                print("OK")
-                tiro_visivel = False
-            self.tiros.append({"x": tiroX, "y": yTiro})
-                
 
-    def atualizar(self):
-        for tiro in self.tiros:
-            tiro["x"] -= info.VELOTIRO
-            self.tiro.mostrarPersonagem(tiro["x"], tiro["y"])
+
+
     #EFEITO PARALLAX CASO NECESSARIO
     def cenario(self):
         for x in range(self.num):

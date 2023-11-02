@@ -36,6 +36,7 @@ class Start:
             self.fases.fase1()
         elif telaDestino == "d":
             pass
+        
     def eventos(self):
         for evento in pygame.event.get():
             if evento.type == QUIT:
