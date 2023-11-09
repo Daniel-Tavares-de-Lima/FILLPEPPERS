@@ -31,11 +31,20 @@ class Fases():
         self.personagem = Perso(self.tela)
         self.tiro = Perso(self.tela)
         self.mascara_personagem = None
-        self.mascara_persoInimigo = None
+        self.mascaraTiroPersonagem = None
+        self.mascaraTiroPersonagem = None
         ##INIMIGO
         self.direcao = "cima"
         self.persoInimigo = Perso(self.tela)
-        self.tempoMudanca = pygame.time.get_ticks() + random.randint(1000,3000)
+        self.mascara_persoInimigo = None
+        self.mascaraTiroInimigo = None
+        self.tempoMudanca = pygame.time.get_ticks() + random.randint(200,500)
+        self.controle = pygame.time.get_ticks() + random.randint(500,1000)
+        self.tiroInimigo = Perso(self.tela)
+        self.tiroInimigo.xTiro = 0
+        self.tiroInimigo.yTiro = 0
+        self.mascaraTiroInimigo = None
+
         
     
     
@@ -50,9 +59,7 @@ class Fases():
         self.personagem.criarPersonagem("nave.png")
         self.persoInimigo.criarPersonagem("naveInimigo.png")
         self.tiro.criarPersonagem("shoot.png")
-
-        
-        
+        self.tiroInimigo.criarPersonagem("shoot.png")
 
         while jogando:
             self.relogio.tick(info.FPS) 
@@ -64,15 +71,9 @@ class Fases():
             self.personagem.mostrarPersonagem(info.X_PERSONAGEM, info.Y_PERSONAGEM)
             self.persoInimigo.mostrarPersonagem(info.X_PERSOINIMIGO,info.Y_PERSOINIMIGO)
             
-
-            if self.mascara_personagem is None:
-                self.mascara_personagem = pygame.mask.from_surface(self.personagem.personagens)
-            if self.mascara_persoInimigo is None:
-                self.mascara_persoInimigo = pygame.mask.from_surface(self.persoInimigo.personagens)
-
-            if self.mascara_personagem.overlap(self.mascara_persoInimigo,(info.X_PERSOINIMIGO - info.X_PERSONAGEM, info.Y_PERSOINIMIGO - info.Y_PERSONAGEM)):
-                print("Colidiu")
-
+            self.mascara_personagem = pygame.mask.from_surface(self.personagem.personagens)
+            self.mascara_persoInimigo = pygame.mask.from_surface(self.persoInimigo.personagens)
+        
 
             for evento in pygame.event.get():
                 if evento.type == QUIT:
@@ -83,7 +84,7 @@ class Fases():
                 if evento.type == KEYUP:
                     if tecla[pygame.K_SPACE]:
                         self.tiro.dispararTiro(info.X_PERSONAGEM, info.Y_PERSONAGEM, info.VELOTIRO,True)
-                        # self.dispararTiro() 
+                        
             
             
             tecla = pygame.key.get_pressed()
@@ -92,67 +93,54 @@ class Fases():
 
             if tempoAtual >= self.tempoMudanca:
                 self.direcao = random.choice(["cima", "baixo", "esquerda", "direita"])
-                self.tempoMudanca = tempoAtual + random.randint(1000,3000)
+                self.tempoMudanca = tempoAtual + random.randint(200,500)
+
+            if tempoAtual >= self.controle:
+                self.tiroInimigo.dispararTiro(info.X_PERSOINIMIGO, info.Y_PERSOINIMIGO, info.VELOTIRO,False) 
+                self.controle = tempoAtual + random.randint(500,1000)  
+                pass
+
             #Atualiza a posição do objeto com base nas teclas pressionadas
-            if tecla[pygame.K_d]:
+            if tecla[pygame.K_d] and info.X_PERSONAGEM < 1180:
                 info.X += info.VELOCIDADE
                 info.X_PERSONAGEM += info.VELOCIDADE
                 
-            if tecla[pygame.K_a]:
+            if tecla[pygame.K_a] and info.X_PERSONAGEM > -17:
                 info.X -= info.VELOCIDADE
                 info.X_PERSONAGEM -= info.VELOCIDADE
 
-            if tecla[pygame.K_w]:
+            if tecla[pygame.K_w] and info.Y_PERSONAGEM > 0:
                 info.Y -= info.VELOCIDADE
                 info.Y_PERSONAGEM -= info.VELOCIDADE
 
-            if tecla[pygame.K_s]:
+            if tecla[pygame.K_s] and info.Y_PERSONAGEM < 630:
                 info.Y += info.VELOCIDADE
                 info.Y_PERSONAGEM += info.VELOCIDADE
                 
                  
-            if self.direcao == "direita":
-                info.X += info.VELOCIDADE
+            if self.direcao == "direita" and info.X_PERSOINIMIGO < 1215:
                 info.X_PERSOINIMIGO += info.VELOCIDADE
-            if self.direcao == "esquerda":
-                info.X -= info.VELOCIDADE
+                  
+            if self.direcao == "esquerda" and info.X_PERSOINIMIGO > 1000:
                 info.X_PERSOINIMIGO -= info.VELOCIDADE  
-            if self.direcao == "cima":
-                info.Y -= info.VELOCIDADE
+                
+            if self.direcao == "cima" and info.Y_PERSOINIMIGO > 20:
                 info.Y_PERSOINIMIGO -= info.VELOCIDADE 
-            if self.direcao == "baixo":
-                info.Y += info.VELOCIDADE
+                
+            if self.direcao == "baixo" and info.Y_PERSOINIMIGO < 650:
                 info.Y_PERSOINIMIGO += info.VELOCIDADE
 
-            info.X = max(0,min(info.X, info.LARGURA - self.persoInimigo.larguraInimigo))
-            info.Y = max(0,min(info.Y, info.ALTURA - self.persoInimigo.alturaInimigo))
-
-            
-            # if tecla[pygame.K_RIGHT]:
-            #     info.X += info.VELOCIDADE
-            #     info.X_PERSOINIMIGO += info.VELOCIDADE
-
-            # if tecla[pygame.K_LEFT]:
-            #     info.X -= info.VELOCIDADE
-            #     info.X_PERSOINIMIGO -= info.VELOCIDADE
-
-            # if tecla[pygame.K_UP]:
-            #     info.Y -= info.VELOCIDADE
-            #     info.Y_PERSOINIMIGO -= info.VELOCIDADE
-
-            # if tecla[pygame.K_DOWN]:
-            #     info.Y += info.VELOCIDADE
-            #     info.Y_PERSOINIMIGO += info.VELOCIDADE        
-                
+           
             #######################################     
             
             
             self.tiro.atualizar(info.VELOTIRO, True)
-            # self.persoInimigo.bot(info.X,info.Y,info.X_PERSOINIMIGO,info.Y_PERSOINIMIGO,info.VELOCIDADE)
+            self.tiroInimigo.atualizar(info.VELOTIRO, False)
+            self.verificarTiros()
+            
 
             ###############################
             #SISTEMA DE COLISÃO
-
             # if not colidiu:
             #     info.VELOY += info.GRAVIDADE
             #     info.Y += info.VELOY
@@ -181,7 +169,7 @@ class Fases():
             controleTempo = pygame.time.get_ticks()
             
             if controleTempo - self.intervalo >= 5000:
-                self.num += 1
+                self.num += 2
                 self.intervalo = controleTempo
             ############################################
             
@@ -196,4 +184,27 @@ class Fases():
                 self.tela.blit(e,((x * self.bg_width) - self.scrol,0)) 
 
             
-        
+    def verificarTiros(self):
+
+        for tiro in self.tiro.tiros:
+            tiro_surface = tiro["surface"]
+
+            if self.mascara_persoInimigo and tiro_surface:
+                mascara_tiro = pygame.mask.from_surface(tiro_surface)
+                if mascara_tiro.overlap(self.mascara_persoInimigo,(info.X_PERSOINIMIGO - tiro["x"], info.Y_PERSOINIMIGO - tiro["y"])):
+                    print("Tiro do personagem atingiu o inimigo")
+                    self.tiro.tiros.remove(tiro)
+
+        for tiro in self.tiroInimigo.tiros:
+            tiro_surface = tiro["surface"]
+
+            if self.mascara_personagem and tiro_surface:
+                mascara_tiro = pygame.mask.from_surface(tiro_surface)
+                if mascara_tiro.overlap(self.mascara_personagem, (info.X_PERSONAGEM - tiro["x"], info.Y_PERSONAGEM - tiro["y"])):
+                    print("Tiro do inimigo atingiu o personagem")
+                    
+                    self.tiroInimigo.tiros.remove(tiro)
+
+
+ 
+                   

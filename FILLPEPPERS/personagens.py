@@ -2,6 +2,7 @@ import pygame
 import info
 import os
 import random
+import neat
 
 class Perso():
 
@@ -11,44 +12,55 @@ class Perso():
 
         self.larguraInimigo = None
         self.alturaInimigo = None
+        self.personagens = None
+        self.geracao = 0
+        self.tiroXpersonagem = 0
+        self.tiroXinimigo = 0
+        self.xTiro = 0
+        self.yTiro = 0
+        
     
 
     ###CONFIGURAÇÕES DO TIRO
     def dispararTiro(self, xInfo, yInfo, veloTiro,verifica):
         if verifica:
-            xTiro = xInfo + 70
-            yTiro = yInfo 
+            self.xTiro = xInfo + 70
+            self.yTiro = yInfo 
         else:
-            xTiro = xInfo - 40
-            yTiro = yInfo + 10   
-        tiroXpersonagem = xTiro
-        tiroXinimigo = xTiro
+            self.xTiro = xInfo - 40
+            self.yTiro = yInfo + 10   
+        self.tiroXpersonagem = self.xTiro
+        self.tiroXinimigo = self.xTiro
+
+        self.mascaraTiroPersonagem = pygame.mask.from_surface(self.personagens)
 
         tiroVisivel = True
 
         if tiroVisivel:
             if verifica:
-                tiroXpersonagem += veloTiro
-                self.mostrarPersonagem(xTiro, yTiro)
+                self.tiroXpersonagem += veloTiro
+                self.mostrarPersonagem(self.xTiro, self.yTiro)
 
-                if tiroXpersonagem > 1300:
+                if self.tiroXpersonagem > 1300:
                     tiroVisivel = False
 
-                if tiroXinimigo < -50:
-                    tiroVisivel = False
+                self.tiros.append({"x": self.tiroXpersonagem, "y": self.yTiro, "surface": self.personagens})
+                self.tiros.append({"x": self.tiroXinimigo, "y": self.yTiro, "surface": self.personagens})
 
-
-                self.tiros.append({"x": tiroXpersonagem, "y": yTiro})
-                self.tiros.append({"x": tiroXinimigo, "y": yTiro})
+                for tiro in self.tiros:
+                    tiro["mascara"] = pygame.mask.from_surface(self.personagens)
             else:
-                tiroXinimigo -= veloTiro
-                self.mostrarPersonagem(xTiro, yTiro)
+                self.tiroXinimigo -= veloTiro
+                self.mostrarPersonagem(self.xTiro, self.yTiro)
 
-                if tiroXpersonagem > 1300 or tiroXinimigo < -50:
+                if self.tiroXinimigo < -50:
                     tiroVisivel = False
 
-                self.tiros.append({"x": tiroXpersonagem, "y": yTiro})
-                self.tiros.append({"x": tiroXinimigo, "y": yTiro})
+                self.tiros.append({"x": self.tiroXpersonagem, "y": self.yTiro, "surface": self.personagens})
+                self.tiros.append({"x": self.tiroXinimigo, "y": self.yTiro, "surface": self.personagens})
+
+                for tiro in self.tiros:
+                    tiro["mascara"] = pygame.mask.from_surface(self.personagens)
 
     def atualizar(self, veloTiro, verifica):
         for tiro in self.tiros:
@@ -58,7 +70,10 @@ class Perso():
             else:
                 tiro["x"] -= veloTiro
                 self.mostrarPersonagem(tiro["x"], tiro["y"])
-    ##############      
+
+        
+
+
 
     def mostrarPersonagem(self, x_personagem, y_personagem):
         self.tela.blit(self.personagens, (x_personagem,y_personagem))
@@ -69,24 +84,18 @@ class Perso():
         self.personagens = os.path.join(direImagem, direPerso)
         self.personagens = pygame.image.load(self.personagens).convert_alpha()  
         self.larguraInimigo, self.alturaInimigo = self.personagens.get_size()
+        self.geracao += 1
+        self.mascaraPersonagem = pygame.mask.from_surface(self.personagens)
+
+    def mostrarTexto(self, texto, tamanho, cor,x,y):
+        #Exiber texto
+        fonte = pygame.font.Font(self.fonte, tamanho)
+        texto = fonte.render(texto, False, cor)
+        textoRect = texto.get_rect()
+        textoRect.midtop = (x,y)
+        self.tela.blit(texto, textoRect) 
 
 
-    def bot(self, x,y,xPerso,yPerso,velo):
-        direcao = random.choice(["cima", "baixo", "esquerda", "direita"])
+    
 
-        if direcao == "direita":
-            x += velo
-            xPerso += velo
-        if direcao == "esquerda":
-            x -= velo
-            xPerso -= velo
-        if direcao == "cima":
-            y -= velo
-            yPerso -= velo
-        if direcao == "baixo":
-            y += velo
-            yPerso += velo    
-
-        x = max(0,min(x,info.LARGURA - self.larguraInimigo))
-        y = max(0, min(x, info.ALTURA - self.alturaInimigo))
-        print(direcao)
+        
