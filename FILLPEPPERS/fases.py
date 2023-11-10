@@ -4,7 +4,6 @@ import info
 import os
 import random
 from sys import exit
-import time
 from personagens import Perso
 
 class Fases():
@@ -13,7 +12,7 @@ class Fases():
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.intervalo = pygame.time.get_ticks()
-        
+        self.fonte = pygame.font.match_font(info.FONTE)
 
         #EFEITO PARALLAX CASO NECESSARIO
         self.scrol = 0
@@ -27,6 +26,7 @@ class Fases():
             
         self.bg_width = self.bg_imagens[0].get_width()
 
+        self.controle = True
         #######PERSONAGENS
         self.personagem = Perso(self.tela)
         self.tiro = Perso(self.tela)
@@ -44,17 +44,11 @@ class Fases():
         self.tiroInimigo.xTiro = 0
         self.tiroInimigo.yTiro = 0
         self.mascaraTiroInimigo = None
-
-        
-    
     
 
     def fase1(self):
         jogando = True
-        colidiu = False
-        pulando = False
-        tiro_visivel = False
-        
+       
         
         self.personagem.criarPersonagem("nave.png")
         self.persoInimigo.criarPersonagem("naveInimigo.png")
@@ -97,8 +91,8 @@ class Fases():
 
             if tempoAtual >= self.controle:
                 self.tiroInimigo.dispararTiro(info.X_PERSOINIMIGO, info.Y_PERSOINIMIGO, info.VELOTIRO,False) 
-                self.controle = tempoAtual + random.randint(500,1000)  
-                pass
+                self.controle = tempoAtual + random.randint(1000,1500)  
+                
 
             #Atualiza a posição do objeto com base nas teclas pressionadas
             if tecla[pygame.K_d] and info.X_PERSONAGEM < 1180:
@@ -137,32 +131,18 @@ class Fases():
             self.tiro.atualizar(info.VELOTIRO, True)
             self.tiroInimigo.atualizar(info.VELOTIRO, False)
             self.verificarTiros()
+
             
+            if info.PONTOS < 0:
+                self.controle = False
+                jogando = False
+
 
             ###############################
-            #SISTEMA DE COLISÃO
-            # if not colidiu:
-            #     info.VELOY += info.GRAVIDADE
-            #     info.Y += info.VELOY
-                    
-            #     if info.Y + 70 > 720:
-            #         colidiu = True
-            #         info.Y = 720 - 70
-            #         info.VELOY = 0
-            #         pulando = False      
-                
-            #     elif info.Y + 70 < 0:
-            #         colidiu = True
-            #         info.Y = 720 + 70
-            #         # info.VELOY = 0
-            #         pulando = False
-
-            #     if info.X + 70 > 1280:
-            #         print("colidu")
-            colidiu = False
+           
+            self.mostrarTexto(f"Pontos: {info.PONTOS}", 25,(255,255,255),50,0)
             ###################################
             
-            ########################################
             #PASSAGEM DAS IMAGENS
             self.scrol += 5
             
@@ -193,7 +173,10 @@ class Fases():
                 mascara_tiro = pygame.mask.from_surface(tiro_surface)
                 if mascara_tiro.overlap(self.mascara_persoInimigo,(info.X_PERSOINIMIGO - tiro["x"], info.Y_PERSOINIMIGO - tiro["y"])):
                     print("Tiro do personagem atingiu o inimigo")
+                    info.PONTOS += 5
                     self.tiro.tiros.remove(tiro)
+
+
 
         for tiro in self.tiroInimigo.tiros:
             tiro_surface = tiro["surface"]
@@ -201,10 +184,17 @@ class Fases():
             if self.mascara_personagem and tiro_surface:
                 mascara_tiro = pygame.mask.from_surface(tiro_surface)
                 if mascara_tiro.overlap(self.mascara_personagem, (info.X_PERSONAGEM - tiro["x"], info.Y_PERSONAGEM - tiro["y"])):
+                    info.PONTOS -= 5
                     print("Tiro do inimigo atingiu o personagem")
+
                     
                     self.tiroInimigo.tiros.remove(tiro)
 
 
- 
-                   
+    def mostrarTexto(self, texto, tamanho, cor,x,y):
+        #Exiber texto
+        fonte = pygame.font.Font(self.fonte, tamanho)
+        texto = fonte.render(texto, False, cor)
+        textoRect = texto.get_rect()
+        textoRect.midtop = (x,y)
+        self.tela.blit(texto, textoRect)            

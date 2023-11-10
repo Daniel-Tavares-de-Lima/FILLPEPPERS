@@ -4,7 +4,7 @@ from sys import exit
 import info 
 from fases import Fases
 import os
-
+from gameOver import GameOver
 
 
 class Start:
@@ -18,13 +18,20 @@ class Start:
         self.relogio = pygame.time.Clock()
         self.fonte = pygame.font.match_font(info.FONTE)
         self.carregarArquivos()
+        self.fases = Fases(self.tela)
 
 
     def rodar(self):
         
         self.jogando = True
+        
         while self.jogando:
-            self.controleTela("start")
+            
+            if self.fases.controle:
+                self.controleTela("start")
+            else:
+                self.controleTela("gameOver") 
+
             self.relogio.tick(info.FPS)
             self.eventos()
             
@@ -34,8 +41,9 @@ class Start:
         if telaDestino == "start":
             self.fases = Fases(self.tela)
             self.fases.fase1()
-        elif telaDestino == "d":
-            pass
+        elif telaDestino == "gameOver":
+            self.gameOver = GameOver(self.tela)
+            self.gameOver.gameOver()
         
     def eventos(self):
         for evento in pygame.event.get():
@@ -61,7 +69,6 @@ class Start:
         self.tela.blit(texto, textoRect)           
 
     
-        
     def telaStart(self):
         startBackground = self.background.get_rect()
         self.tela.blit(self.background, startBackground)
@@ -81,7 +88,7 @@ class Start:
                     self.executando = False   
                 if evento.type == pygame.KEYUP:
                     rodando = False
-                    print(rodando)
+                    
 
 
 g = Start()
