@@ -5,35 +5,37 @@ import os
 import random
 from sys import exit
 from personagens import Perso
+from detalhes import Details
 
 class Fases():
     def __init__(self, tela):
-        ###INFORMAÇÕES DA TELA
+        ###----------INFORMAÇÕES DA TELA
         self.tela = tela
         self.relogio = pygame.time.Clock()
         self.intervalo = pygame.time.get_ticks()
         self.fonte = pygame.font.match_font(info.FONTE)
+        self.detalhes = Details(tela)
+        self.detalhes.carregarArquivos()
 
-        #EFEITO PARALLAX CASO NECESSARIO
+        #----------------EFEITO PARALLAX CASO NECESSARIO
         self.scrol = 0
         self.num = 3
         self.bg_imagens = []
         direImagens = os.path.join(os.getcwd(), "imagens")
         for i in range(1,3):
-            cenario = os.path.join(direImagens, f"cenario{i}.png")
+            cenario = os.path.join(direImagens, f"fundo{i}.png")
             bg_imagem = pygame.image.load(cenario).convert_alpha()
             self.bg_imagens.append(bg_imagem)
             
         self.bg_width = self.bg_imagens[0].get_width()
-
         self.controle = True
-        #######PERSONAGENS
+        #######-----------PERSONAGENS
         self.personagem = Perso(self.tela)
         self.tiro = Perso(self.tela)
         self.mascara_personagem = None
         self.mascaraTiroPersonagem = None
         self.mascaraTiroPersonagem = None
-        ##INIMIGO
+        ##---------INIMIGO
         self.direcao = "cima"
         self.persoInimigo = Perso(self.tela)
         self.mascara_persoInimigo = None
@@ -49,7 +51,6 @@ class Fases():
     def fase1(self):
         jogando = True
        
-        
         self.personagem.criarPersonagem("nave.png")
         self.persoInimigo.criarPersonagem("naveInimigo.png")
         self.tiro.criarPersonagem("shoot.png")
@@ -58,6 +59,8 @@ class Fases():
         while jogando:
             self.relogio.tick(info.FPS) 
             self.tela.fill((73, 81, 82))
+            pygame.mixer.music.load(os.path.join(self.detalhes.direSom, "raceAgaintSunset.mp3"))
+            pygame.mixer.music.play()
             
             #CENARIO 
             self.cenario()
@@ -67,10 +70,11 @@ class Fases():
             
             self.mascara_personagem = pygame.mask.from_surface(self.personagem.personagens)
             self.mascara_persoInimigo = pygame.mask.from_surface(self.persoInimigo.personagens)
-        
+            tecla = pygame.key.get_pressed()
 
             for evento in pygame.event.get():
                 if evento.type == QUIT:
+                    pygame.mixer.music.stop()
                     jogando = False
                     pygame.quit()
                     exit()   
@@ -81,7 +85,7 @@ class Fases():
                         
             
             
-            tecla = pygame.key.get_pressed()
+            
             tempoAtual = pygame.time.get_ticks()
             ######################################
 
@@ -139,8 +143,8 @@ class Fases():
 
 
             ###############################
-           
-            self.mostrarTexto(f"Pontos: {info.PONTOS}", 25,(255,255,255),50,0)
+            self.detalhes.mostrarTexto(f"Pontos: {info.PONTOS}", 25,info.VERMELHO,50,0)
+            
             ###################################
             
             #PASSAGEM DAS IMAGENS
@@ -155,8 +159,6 @@ class Fases():
             
             pygame.display.update()
 
-
-
     #EFEITO PARALLAX CASO NECESSARIO
     def cenario(self):
         for x in range(self.num):
@@ -165,18 +167,14 @@ class Fases():
 
             
     def verificarTiros(self):
-
         for tiro in self.tiro.tiros:
             tiro_surface = tiro["surface"]
 
             if self.mascara_persoInimigo and tiro_surface:
                 mascara_tiro = pygame.mask.from_surface(tiro_surface)
                 if mascara_tiro.overlap(self.mascara_persoInimigo,(info.X_PERSOINIMIGO - tiro["x"], info.Y_PERSOINIMIGO - tiro["y"])):
-                    print("Tiro do personagem atingiu o inimigo")
                     info.PONTOS += 5
                     self.tiro.tiros.remove(tiro)
-
-
 
         for tiro in self.tiroInimigo.tiros:
             tiro_surface = tiro["surface"]
@@ -185,16 +183,7 @@ class Fases():
                 mascara_tiro = pygame.mask.from_surface(tiro_surface)
                 if mascara_tiro.overlap(self.mascara_personagem, (info.X_PERSONAGEM - tiro["x"], info.Y_PERSONAGEM - tiro["y"])):
                     info.PONTOS -= 5
-                    print("Tiro do inimigo atingiu o personagem")
-
-                    
                     self.tiroInimigo.tiros.remove(tiro)
 
 
-    def mostrarTexto(self, texto, tamanho, cor,x,y):
-        #Exiber texto
-        fonte = pygame.font.Font(self.fonte, tamanho)
-        texto = fonte.render(texto, False, cor)
-        textoRect = texto.get_rect()
-        textoRect.midtop = (x,y)
-        self.tela.blit(texto, textoRect)            
+           

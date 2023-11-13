@@ -5,6 +5,7 @@ import info
 from fases import Fases
 import os
 from gameOver import GameOver
+from detalhes import Details
 
 
 class Start:
@@ -17,9 +18,10 @@ class Start:
         self.executando = True
         self.relogio = pygame.time.Clock()
         self.fonte = pygame.font.match_font(info.FONTE)
-        self.carregarArquivos()
+        # self.carregarArquivos()
         self.fases = Fases(self.tela)
-
+        self.detalhes = Details(self.tela)
+        self.detalhes.carregarArquivos()
 
     def rodar(self):
         
@@ -54,27 +56,14 @@ class Start:
                     pygame.quit()
                     exit()
 
-    def carregarArquivos(self):
-        direImagens = os.path.join(os.getcwd(), "imagens")
-        self.background = os.path.join(direImagens, "TelaStart.png")
-        self.background = pygame.image.load(self.background).convert()
-        
 
-    def mostrarTexto(self, texto, tamanho, cor,x,y):
-        #Exiber texto
-        fonte = pygame.font.Font(self.fonte, tamanho)
-        texto = fonte.render(texto, False, cor)
-        textoRect = texto.get_rect()
-        textoRect.midtop = (x,y)
-        self.tela.blit(texto, textoRect)           
-
-    
     def telaStart(self):
-        startBackground = self.background.get_rect()
-        self.tela.blit(self.background, startBackground)
-
-        self.mostrarTexto("Pressione qualquer tecla para jogar", 32,info.VERMELHO,info.LARGURA//2, 320)
-        self.mostrarTexto("Desenvolvido por Daniel Tavares",14, info.BRANCO,info.LARGURA//2,690)
+        startBackground = self.detalhes.background.get_rect()
+        self.tela.blit(self.detalhes.background, startBackground)
+        self.detalhes.mostrarTexto("Pressione qualquer tecla para jogar", 32,info.VERMELHO,info.LARGURA//2, 320)
+        self.detalhes.mostrarTexto("Desenvolvido por Daniel Tavares",14, info.BRANCO,info.LARGURA//2,690)
+        # pygame.mixer.music.load(os.path.join(self.detalhes.direSom, "musicaDeFundo.mp3"))
+        # pygame.mixer.music.play()
         pygame.display.flip()
         self.esperarPorJogador()
 
@@ -88,6 +77,8 @@ class Start:
                     self.executando = False   
                 if evento.type == pygame.KEYUP:
                     rodando = False
+                    pygame.mixer.music.stop()
+                    pygame.mixer.Sound(os.path.join(self.detalhes.direSom, "Token.wav")).play()
                     
 
 
