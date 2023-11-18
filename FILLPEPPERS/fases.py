@@ -53,14 +53,16 @@ class Fases():
        
         self.personagem.criarPersonagem("nave.png")
         self.persoInimigo.criarPersonagem("naveInimigo.png")
-        self.tiro.criarPersonagem("shoot.png")
-        self.tiroInimigo.criarPersonagem("shoot.png")
+        self.tiro.criarPersonagem("laserf.png")
+        self.tiroInimigo.criarPersonagem("lasern.png")
+
+        pygame.mixer.music.load(os.path.join(self.detalhes.direSom, "raceAgaintSunset.mp3"))
+        pygame.mixer.music.play()
 
         while jogando:
             self.relogio.tick(info.FPS) 
             self.tela.fill((73, 81, 82))
-            pygame.mixer.music.load(os.path.join(self.detalhes.direSom, "raceAgaintSunset.mp3"))
-            pygame.mixer.music.play()
+            
             
             #CENARIO 
             self.cenario()
@@ -82,6 +84,7 @@ class Fases():
                 if evento.type == KEYUP:
                     if tecla[pygame.K_SPACE]:
                         self.tiro.dispararTiro(info.X_PERSONAGEM, info.Y_PERSONAGEM, info.VELOTIRO,True)
+                        pygame.mixer.Sound(os.path.join(self.detalhes.direSom, "disparo.mp3")).play()
                         
             
             
@@ -95,6 +98,7 @@ class Fases():
 
             if tempoAtual >= self.controle:
                 self.tiroInimigo.dispararTiro(info.X_PERSOINIMIGO, info.Y_PERSOINIMIGO, info.VELOTIRO,False) 
+                pygame.mixer.Sound(os.path.join(self.detalhes.direSom, "disparo.mp3")).play()
                 self.controle = tempoAtual + random.randint(1000,1500)  
                 
 
@@ -135,11 +139,12 @@ class Fases():
             self.tiro.atualizar(info.VELOTIRO, True)
             self.tiroInimigo.atualizar(info.VELOTIRO, False)
             self.verificarTiros()
-
+            
             
             if info.PONTOS < 0:
                 self.controle = False
                 jogando = False
+                pygame.mixer.music.stop()
 
 
             ###############################

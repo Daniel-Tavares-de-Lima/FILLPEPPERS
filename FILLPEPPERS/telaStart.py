@@ -62,8 +62,8 @@ class Start:
         self.tela.blit(self.detalhes.background, startBackground)
         self.detalhes.mostrarTexto("Pressione qualquer tecla para jogar", 32,info.VERMELHO,info.LARGURA//2, 320)
         self.detalhes.mostrarTexto("Desenvolvido por Daniel Tavares",14, info.BRANCO,info.LARGURA//2,690)
-        # pygame.mixer.music.load(os.path.join(self.detalhes.direSom, "musicaDeFundo.mp3"))
-        # pygame.mixer.music.play()
+        pygame.mixer.music.load(os.path.join(self.detalhes.direSom, "musicaDeFundo.mp3"))
+        pygame.mixer.music.play()
         pygame.display.flip()
         self.esperarPorJogador()
 
@@ -78,7 +78,7 @@ class Start:
                 if evento.type == pygame.KEYUP:
                     rodando = False
                     pygame.mixer.music.stop()
-                    pygame.mixer.Sound(os.path.join(self.detalhes.direSom, "Token.wav")).play()
+                    
                     
 
 

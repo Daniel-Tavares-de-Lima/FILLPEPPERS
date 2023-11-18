@@ -10,7 +10,8 @@ class Details:
         self.carregarArquivos()
         self.background = None
         self.gameOverTela = None
-
+        self.direSom = None
+        
     def mostrarTexto(self, texto, tamanho, cor,x,y):
         #Exiber texto
         fonte = pygame.font.Font(self.fonte, tamanho)
